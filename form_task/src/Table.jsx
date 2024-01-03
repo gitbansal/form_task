@@ -4,7 +4,6 @@ import {
     EditRegular
 } from "@fluentui/react-icons";
 import {
-    Avatar,
     TableBody,
     TableCell,
     TableRow,
@@ -45,14 +44,14 @@ const TableData = ({ items, handleDelete, handleEdit }) => {
                 {items.length ? (
                     items.map((item, index) => (
                         <TableRow key={index}>
-                            <TableCell>{item.employeeName}</TableCell>
-                            <TableCell>{item.employeeAge}</TableCell>
-                            <TableCell>{item.employeeDepartment}</TableCell>
+                            <TableCell style={{ whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.employeeName}</TableCell>
+                            <TableCell style={{ whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.employeeAge}</TableCell>
+                            <TableCell style={{ whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.employeeDepartment}</TableCell>
                             <TableCell>{item.dateOfJoining}</TableCell>
                             <TableCell role="gridcell" tabIndex={0} {...focusableGroupAttr}>
                                 <TableCellLayout>
-                                    <Button onClick={() => handleEdit(item, index)} icon={<EditRegular />} aria-label="Edit" />
-                                    <Button onClick={() => handleDelete(item, index)} icon={<DeleteRegular />} aria-label="Delete" />
+                                    <Button onClick={() => handleEdit(item)} icon={<EditRegular />} aria-label="Edit" />
+                                    <Button onClick={() => handleDelete(item.id)} icon={<DeleteRegular />} aria-label="Delete" />
                                 </TableCellLayout>
                             </TableCell>
                         </TableRow>

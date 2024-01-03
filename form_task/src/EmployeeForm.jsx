@@ -8,11 +8,9 @@ import {
     Input,
     Label,
     Button
-    //   DatePicker,
-    //   PrimaryButton,
-    //   DefaultButton,
 } from "@fluentui/react-components";
 import Table from "./Table";
+import { ToastContainer, toast } from 'react-toastify';
 
 const useStyles = makeStyles({
     base: {
@@ -33,7 +31,6 @@ const useStyles = makeStyles({
         ...shorthands.padding(tokens.spacingHorizontalMNudge),
     },
     filledLighter: {
-        // backgroundColor: tokens.colorNeutralBackgroundInverted,
         border: `1px solid ${tokens.colorNeutralForegroundInverted2}`,
         "> label": {
             color: tokens.colorBrandForegroundInverted,
@@ -57,6 +54,7 @@ const EmployeeForm = () => {
     const dateOfJoiningId = useId("employee-date-of-joining");
     const styles = useStyles();
     const [formData, setFormData] = React.useState({
+        id: null,
         employeeName: "",
         employeeAge: "",
         employeeDepartment: "",
@@ -64,7 +62,7 @@ const EmployeeForm = () => {
     });
     const [WholeData, setWholeData] = React.useState([]);
     const [isSubmit, setIsSubmit] = React.useState(false);
-    const [isUpdate, setIsUpdate] = useState(false);
+    const [isUpdate, setIsUpdate] = React.useState("");
 
     React.useEffect(() => {
         const storedData = localStorage.getItem("employeeFormData");
@@ -77,8 +75,6 @@ const EmployeeForm = () => {
         }
     }, []);
 
-
-
     const handleChange = (field, value) => {
         setFormData((prevData) => ({
             ...prevData,
@@ -86,24 +82,57 @@ const EmployeeForm = () => {
         }));
     };
 
-    const handleDelete = (data, index) => {
+    const handleDelete = (id) => {
+        if(isUpdate){
+            toast.dismiss();
+            toast.error("Deletion is currently restricted as an update is in progress.");
+            return
+        }
         const storedData = localStorage.getItem("employeeFormData");
         if (storedData || WholeData.length) {
             const existingData = JSON.parse(storedData);
-            const updatedData = existingData.filter((item, i) => i !== index);
+            const updatedData = existingData.filter((item) => item.id !== id);
             localStorage.setItem("employeeFormData", JSON.stringify(updatedData));
             setWholeData(updatedData);
         }
     };
 
     const handleUpdate = () => {
+        setIsSubmit(true);
+        const isValidFormData =
+            formData.employeeName !== "" &&
+            formData.employeeAge !== "" &&
+            formData.employeeDepartment !== "" &&
+            formData.dateOfJoining !== "";
 
+        const storedData = localStorage.getItem("employeeFormData");
+        if (storedData && isValidFormData) {
+            const existingData = JSON.parse(storedData);
+            const updatedData = existingData.map((item) => {
+                if (item.id === isUpdate) {
+                    return formData;
+                } else {
+                    return item;
+                }
+            });
+            localStorage.setItem("employeeFormData", JSON.stringify(updatedData));
+            setWholeData(updatedData);
+            setIsUpdate("")
+            setIsSubmit(false)
+            setFormData({
+                id: null,
+                employeeName: "",
+                employeeAge: "",
+                employeeDepartment: "",
+                dateOfJoining: "",
+            })
+        }
     }
 
 
-    const handleEdit = (data, index) => {
-        console.log("Data ---", data)
-
+    const handleEdit = (data) => {
+        setIsUpdate(data.id)
+        setFormData(data)
     }
 
     const handleSubmit = () => {
@@ -115,11 +144,13 @@ const EmployeeForm = () => {
             formData.dateOfJoining !== "";
 
         if (isValidFormData) {
-            alert("called")
+            const newId = Date.now();
+            formData.id = newId;
             localStorage.setItem("employeeFormData", JSON.stringify([...WholeData, formData]));
             setWholeData((prevData) => [...prevData, formData]);
             setIsSubmit(false);
             setFormData({
+                id: null,
                 employeeName: "",
                 employeeAge: "",
                 employeeDepartment: "",
@@ -131,6 +162,7 @@ const EmployeeForm = () => {
 
     const handleClear = () => {
         setFormData({
+            id: null,
             employeeName: "",
             employeeAge: "",
             employeeDepartment: "",
@@ -140,7 +172,7 @@ const EmployeeForm = () => {
 
     return (
         <>
-            <div className={styles.base} style={{ padding: "10px", borderRadius: "10px" }}>
+            <div className={styles.base} style={{ padding: "10px", borderRadius: "10px",margin:"auto" }}>
                 <div style={{ textAlign: "center", fontWeight: "600", fontSize: "16px" }}>Employee Form</div>
                 <div className={mergeClasses(styles.field, styles.filledLighter)}>
                     <Label htmlFor={nameId} className={styles.label}>Employee Name</Label>
@@ -203,13 +235,15 @@ const EmployeeForm = () => {
                 </div>
 
                 <div className={styles.buttonContainer} style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
-                    <Button appearance="primary" onClick={handleSubmit}>Submit</Button>
+                    {!isUpdate ? <Button appearance="primary" onClick={handleSubmit}>Submit</Button> :
+                        <Button appearance="primary" onClick={handleUpdate}>Update</Button>}
                     <Button onClick={handleClear}>Clear</Button>
                 </div>
             </div>
             <div style={{ padding: "20px" }}>
                 <Table items={WholeData} handleDelete={handleDelete} handleEdit={handleEdit} />
             </div>
+            <ToastContainer />
         </>
     );
 };
