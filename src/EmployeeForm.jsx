@@ -168,6 +168,7 @@ const EmployeeForm = () => {
             employeeDepartment: "",
             dateOfJoining: "",
         });
+        setIsUpdate("")
     };
 
     return (
